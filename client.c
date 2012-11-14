@@ -8,13 +8,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h> 
-
+#include <pthread.h>
 #include <netdb.h>
 #include <sys/param.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include <sys/time.h>
 
 #define MAXBUFSIZE 1024
+#define MAX_CONNECTS 50
 
 char* c_name;
 char* server_ip;
@@ -165,5 +165,5 @@ char* filelist(char* name, char* file_list, char* buf)
 		sdot = sdot+fdot +1;
 		strcat(buf,buffer);
 	}
-
+    return 0;
 }
