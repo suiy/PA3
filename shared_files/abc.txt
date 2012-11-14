@@ -1,0 +1,21 @@
+server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(server_port);
+    server_addr.sin_addr = *((struct in_addr*)host->h_addr);
+    bzero(&(server_addr.sin_zero), 8);
+
+    if (connect(sock, (struct sockaddr*)&server_addr,
+                sizeof(struct sockaddr)) == -1) {
+        perror("Connect");
+        exit(1);
+    }
+
+    //2.send client name and file list to server 
+    char buffer[MAXBUFSIZE];
+    buffer = filelist(c_name,file_list)
+    
+
+close(sock);
+}
+
+char* filelist(char* name, char* file_list)
+{
