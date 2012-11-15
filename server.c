@@ -33,8 +33,8 @@ int socks[MAX_CONNECTS];
 
 int tcp_listen(int port);
 void hash_ini();
-void hash_update(char* buffer, char *owner,int sock);
-node* read_buf(char* buffer);
+void hash_update(char* buffer, char *owner,int sock,char *ip);
+node* read_buf(char* buffer,char* ip);
 node* hash_search(char* key);
 void hash_print(char* buffer);
 void hash_delete(char* owner);
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]){
     fclose(logFile);
 
     servSock=tcp_listen(server_port);
-   hash_ini();
+    hash_ini();
     while(1){
      // check to see if anyone is trying to connect 
         fd_set rfds;
@@ -105,10 +105,14 @@ int main(int argc, char *argv[]){
         send(sock,welcome,sizeof(welcome),0);
         //if there are others connected to the server, probably good to notify them
         //that someone else has joined.
+        char ip[MAXBUFSIZE];
+        bzero(ip,MAXBUFSIZE);
+        strcpy(ip,inet_ntoa(clientAddr.sin_addr));
+
          printf("%s\n",buffer+sdot+fdot+2);
         pthread_mutex_lock(&mutex);
         //now add your new user to your global list of users
-        hash_update(buffer+fdot+sdot+2,name,sock);
+        hash_update(buffer+fdot+sdot+2,name,sock,ip);
         pthread_mutex_unlock(&mutex);
         bzero(buffer,MAXBUFSIZE);
         hash_print(buffer);
@@ -164,8 +168,20 @@ void *connection(void *sockid) {
     char buffer[MAXBUFSIZE];
     char command[MAXBUFSIZE];
     char name[MAXBUFSIZE];
-
+    char ip[MAXBUFSIZE];
+    bzero(ip,MAXBUFSIZE);
+    
     pthread_detach(pthread_self());  //automatically clears the threads memory on exit
+    
+    int n;
+    for(n=0;n<MAX_CONNECTS;n++){
+    if(s==socks[n]){
+        if(hashtable[n]!=NULL){
+         strcpy(ip,hashtable[n]->ip);
+         break;
+       }
+     }
+    }
 
 
     /*
@@ -177,6 +193,7 @@ void *connection(void *sockid) {
     bzero(command,MAXBUFSIZE);
     bzero(name,MAXBUFSIZE);
     bzero(buffer,MAXBUFSIZE);
+  
     
     recv(s,buffer,MAXBUFSIZE,0);
     
@@ -185,11 +202,10 @@ void *connection(void *sockid) {
     int sdot = strcspn(buffer+fdot+1,".");
     strncpy(name,buffer,fdot);
     strncpy(command, buffer+fdot+1, sdot);
-    
 
     if(!strcmp(command,"SendMyFilesList")){
         pthread_mutex_lock(&mutex);
-        hash_update(buffer+fdot+sdot+2,name,s);
+        hash_update(buffer+fdot+sdot+2,name,s,ip);
         pthread_mutex_unlock(&mutex);
         bzero(buffer,MAXBUFSIZE);
         hash_print(buffer);
@@ -253,7 +269,7 @@ void hash_ini(node *head){
     }
 }
 
-void hash_update(char* buffer, char *owner,int sock){
+void hash_update(char* buffer, char *owner,int sock,char *ip){
     node* entry;
     node* next;
     entry=NULL;
@@ -274,7 +290,7 @@ void hash_update(char* buffer, char *owner,int sock){
                 free(entry);
                 entry = next;
                 }
-                hashtable[n]=read_buf(buffer);
+                hashtable[n]=read_buf(buffer,ip);
                 entry = hashtable[n];
                 break;
             }
@@ -285,12 +301,12 @@ void hash_update(char* buffer, char *owner,int sock){
     }
 
     if(entry == NULL){
-     hashtable[k]=read_buf(buffer);
+     hashtable[k]=read_buf(buffer,ip);
      socks[k]=sock;
     }
     
 }
-node* read_buf(char* buffer){
+node* read_buf(char* buffer,char* ip){
     char buf[MAXBUFSIZE];
     int first = 1;
     int sdot = 0;
@@ -328,13 +344,13 @@ node* read_buf(char* buffer){
         strcpy(entry->owner,buf);
         sdot = sdot+fdot+2;
         
-        fdot = strcspn(buffer+sdot,"||");
+       /* fdot = strcspn(buffer+sdot,"||");
         bzero(buf,MAXBUFSIZE);
         strncpy(buf, buffer+sdot, fdot);
-         buf[fdot]='\0';
+         buf[fdot]='\0';*/
         entry->ip=(char*)malloc(fdot*sizeof(char));
-        strcpy(entry->ip,buf);
-        sdot = sdot+fdot+2;
+        strcpy(entry->ip,ip);
+        //sdot = sdot+fdot+2;
         first = 0;
     }
     return head;

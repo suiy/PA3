@@ -136,12 +136,12 @@ char* filelist(char* name, char* file_list, char* buf)
 	bzero(buffer,MAXBUFSIZE);
 	sprintf(buf,"%s.SendMyFilesList.",name);
 	//get ip adress
-	bzero(hostname,MAXBUFSIZE);
+	/*bzero(hostname,MAXBUFSIZE);
 	gethostname(hostname,MAXBUFSIZE);
 	hostname[MAXBUFSIZE-1] = '\0';
 	struct hostent * record=gethostbyname(hostname);
 	struct in_addr ** addr_list= (struct in_addr **)record->h_addr_list;
-	char* ip_address =inet_ntoa(*addr_list[0]);
+	char* ip_address =inet_ntoa(*addr_list[0]);*/
 	
     //copy information to buffer
     while(sdot<strlen(file_list)){
@@ -160,7 +160,7 @@ char* filelist(char* name, char* file_list, char* buf)
 			size = ftell(f); // get current file pointer
 			fseek(f, 0, SEEK_SET); // seek back to beginning of file
     		fclose(f);
-    		sprintf(buffer,"%s||%d||%s||%s||",filename,size,name,ip_address);
+    		sprintf(buffer,"%s||%d||%s||",filename,size,name);
     	}
 		sdot = sdot+fdot +1;
 		strcat(buf,buffer);
