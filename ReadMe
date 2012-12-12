@@ -1,0 +1,29 @@
+PA3: TCP File Distribution System
+CSCI 4273
+Yuan Sui
+11/15/2012
+
+The parts that my program can implement:
+-clients are able to connect to the server via TCP and execute the commands above
+-clients are able to send and receive TCP messages and send files to each other
+-server correctly routes all file requests  to the correct clients
+
+The parts that still have bugs:
+After the client enter the command "Get <file>", the program cannot automatically 
+finish the downloading work in the back scene. That means, the client that is responsible for
+sending files needs to enter the return key to start the sending process. All the rest
+works will be finished automatically. I don't know how to solve this small problem.
+
+Compile
+make
+make clean
+
+Run
+./server <port #>
+./client <client name> <server ip> <server port #> <file1>,<file2>,<file3>,
+
+Client Actions
+>List
+>SendMyFilesList
+>Get <file>
+>Exit
